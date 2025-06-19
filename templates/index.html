@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UnMask Yourself</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Fonts & Styles -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+</head>
+<body class="light-mode">
+
+  <!-- Navigation -->
+  <header class="fixed-top bg-dark text-white shadow-sm">
+    <div class="container d-flex justify-content-between align-items-center py-2">
+      <nav>
+        <ul class="nav">
+          <li class="nav-item"><a class="nav-link text-white" href="#home">Home</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="#about">About</a></li>
+          <li class="nav-item"><a class="nav-link text-white" href="#chat">Chat With Us</a></li>
+        </ul>
+      </nav>
+      <button id="theme-toggle" class="btn btn-outline-light btn-sm">🌓</button>
+    </div>
+  </header>
+
+  <!-- Sections -->
+  <main class="pt-5">
+    <!-- Hero Section -->
+    <section id="home" class="section bg-image text-center text-white d-flex flex-column justify-content-center align-items-center">
+      <div class="overlay">
+        <h1 class="display-4 fw-bold">UnMask Yourself</h1>
+        <p class="lead">Anonymous, Pressure-Free Chatting</p>
+        <a href="#chat" class="btn btn-outline-light btn-lg mt-4 rounded-pill">Chat With Us</a>
+      </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="section container py-5 text-center">
+  <h2 class="mb-4" style="font-size: 2.5rem;">About</h2>
+  <p style="font-size: 1.25rem; font-family: 'Montserrat', sans-serif; max-width: 800px; margin: auto;">
+    <strong>UnMask Yourself</strong> is a safe, anonymous space created for students who may feel overwhelmed, isolated, or hesitant to speak openly in school.
+    If you're under pressure from your peers or afraid to approach a teacher directly, this platform lets you share your thoughts and concerns without revealing your identity.
+    Our team is here to listen — no judgment, no labels, just support.
+  </p>
+</section>
+
+
+
+    <!-- Chat Section -->
+    <section id="chat" class="section container py-5 text-center">
+      <h2>Chat With Us</h2>
+      <p class="mb-4">We’re here to listen. Whether you're new or returning, join the conversation.</p>
+      <a href="{{ url_for('chat_select') }}" class="btn btn-primary btn-lg rounded-pill">Open Chat</a>
+    </section>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Theme toggle
+    const toggleBtn = document.getElementById("theme-toggle");
+    toggleBtn.addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+
+    // Scrollspy highlight
+    window.addEventListener("scroll", () => {
+      const sections = document.querySelectorAll("section");
+      const navLinks = document.querySelectorAll("nav a");
+      let current = "";
+      sections.forEach((section) => {
+        const top = section.offsetTop;
+        if (pageYOffset >= top - 100) current = section.getAttribute("id");
+      });
+      navLinks.forEach((link) => {
+        link.classList.remove("active");
+        if (link.getAttribute("href") === `#${current}`) {
+          link.classList.add("active");
+        }
+      });
+    });
+  </script>
+</body>
+</html>
