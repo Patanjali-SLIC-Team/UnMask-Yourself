@@ -6,35 +6,44 @@ import os
 
 app = Flask(__name__)
 
-# Load Firebase credentials and initialize app
-cred = credentials.Certificate("firebase_config/firebase_credentials.json")
+# Load Firebase credentials (from secret environment variable path in production)
+cred_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'firebase_credentials.json')
+cred = credentials.Certificate(cred_path)
+
+# Initialize Firebase
 firebase_admin.initialize_app(cred, {
-    'databaseURL': 'https://patanjali-slic-25-26-default-rtdb.firebaseio.com/'  # replace with your actual Firebase Realtime DB URL
+    'databaseURL': 'https://patanjali-slic-25-26-default-rtdb.firebaseio.com/'  # Replace with your own
 })
 
-# Home page
+# Home Page
 @app.route('/')
 def home():
     return render_template("index.html")
 
-# Chat selection page: choose new/existing
+# Chat Option Page (New/Existing)
 @app.route('/chat')
 def chat_select():
     return render_template("chat_select.html")
 
-# Generate 8-digit UUID for new user
+# New User - Generate 8-digit UUID
 @app.route('/new_user')
 def new_user():
-    new_id = str(uuid.uuid4().int)[:8]
+    while True:
+        new_id = str(uuid.uuid4().int)[:8]
+        # Avoid accidental UUID collision
+        if not db.reference(f"/chats/{new_id}").get():
+            break
     return redirect(url_for('chat_user', user_id=new_id))
 
-# Login for existing user using UUID
+# Existing User Login
 @app.route('/existing_user', methods=['POST'])
 def existing_user():
     user_id = request.form['user_id']
+    if not db.reference(f"/chats/{user_id}").get():
+        return "Invalid ID. Please try again.", 404
     return redirect(url_for('chat_user', user_id=user_id))
 
-# User chat interface
+# User Chat Page
 @app.route('/chat/<user_id>', methods=['GET', 'POST'])
 def chat_user(user_id):
     ref = db.reference(f"/chats/{user_id}")
@@ -44,7 +53,7 @@ def chat_user(user_id):
     messages = ref.get() or {}
     return render_template("chat_user.html", user_id=user_id, messages=messages)
 
-# Admin chat interface to reply to users (secured view - simple version)
+# Admin Interface (developer-only view)
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     if request.method == 'POST':
@@ -54,6 +63,6 @@ def admin():
     users = db.reference("/chats").get() or {}
     return render_template("chat_admin.html", users=users)
 
-# Run the Flask app
+# Run Flask server
 if __name__ == '__main__':
     app.run(debug=True)
