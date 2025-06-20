@@ -1,10 +1,13 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 import firebase_admin
 from firebase_admin import credentials, db
 import uuid
 import os
 
 app = Flask(__name__)
+app.secret_key = "299c5a6243ed199feff9532b5220bb4f"
+ADMIN_USERNAME = "Patanjali-SLIC-Team"
+ADMIN_PASSWORD = "PatanjaliSLIC@2526"
 
 # Use environment variable if available (for deployment)
 cred_path = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', 'firebase_credentials.json')
@@ -54,13 +57,37 @@ def chat_user(user_id):
     return render_template("chat_user.html", user_id=user_id, messages=messages)
 
 # Admin chat interface
+# Admin login page
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:
+            session['admin'] = True
+            return redirect(url_for('admin'))
+        else:
+            return render_template("admin_login.html", error="Invalid credentials")
+    return render_template("admin_login.html")
+
+# Admin logout
+@app.route('/admin_logout')
+def admin_logout():
+    session.pop('admin', None)
+    return redirect(url_for('home'))
+
+# Admin chat interface
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
+    if not session.get('admin'):
+        return redirect(url_for('admin_login'))
+
     if request.method == 'POST':
         user_id = request.form['user_id']
         message = request.form['message']
         db.reference(f"/chats/{user_id}").push({"from": "admin", "text": message})
-        return redirect(url_for('admin'))  # Prevents duplicates on refresh
+        return redirect(url_for('admin'))
+
     users = db.reference("/chats").get() or {}
     return render_template("chat_admin.html", users=users)
 
